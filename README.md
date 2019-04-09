@@ -18,7 +18,7 @@ cd getset-web-server
 docker login
 
 # Build Docker image
-docker build -t getset-docker-server
+docker build -t getset-docker-server .
 
 # Run docker image server
 docker run -d -p 3000:9000 getset-docker-server
