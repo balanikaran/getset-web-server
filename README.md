@@ -3,8 +3,8 @@
 ### Note: Find the CLI tool here: [CLI](https://github.com/krnblni/getset-simple-cli)
 ---
 
-[![PR](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/krnblni/getset-simple-cli)
-[![GitLicense](https://gitlicense.com/badge/krnblni/getset-simple-cli)](https://github.com/krnblni/getset-simple-cli)
+[![PR](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/krnblni/getset-web-server)
+[![GitLicense](https://gitlicense.com/badge/krnblni/getset-simple-cli)](https://github.com/krnblni/getset-web-server)
 
 ## Quick Start
 ``` bash
