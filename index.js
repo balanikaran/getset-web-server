@@ -1,26 +1,74 @@
-const express = require('express');
+const express = require("express");
+const storage = require("node-persist");
+const socket = require("socket.io");
+
+// App Setup
 const app = express();
-const storage = require('node-persist');
+var server = app.listen(9000, () =>
+  console.log("Listening on port number 9000")
+);
 
-app.use(express.json());
+// Socket Setup
+var io = socket(server);
 
-app.get('/:key', async (req, res) => {
+// Object to store socket ids and listening key
+var currentValuesBeingListened = {};
+
+// defining socket events
+io.on("connection", socket => {
+  console.log("Connection established");
+
+  socket.on("testing_socket_connection", msg => {
+    console.log(msg);
+    socket.emit('test_successful');
+  });
+
+  socket.on("set", async data => {
+    console.log("set was called");
     await storage.init();
-    const value = await storage.getItem(req.params.key);
-    if(value == null){
-        res.json({"key": req.params.key, "value": "No value found"});
-    }else{
-        res.json({"key": req.params.key, "value": value});
+    await storage.setItem(data.key, data.value);
+    socket.emit(
+        "set_done",
+        "Added/Updated the pair = <" + data.key + ", " + data.value + ">"
+      );
+
+    console.log(currentValuesBeingListened);
+    for(var key in currentValuesBeingListened){
+        if (currentValuesBeingListened[key] == data.key) {
+            socket.broadcast.to(key).emit("listen_again", data.key);
+        }
     }
-    
 });
 
-app.post('/add', async (req, res) => {
-    var key = req.body.key;
-    var value = req.body.value;
+  socket.on("get", async data => {
+    console.log("get was called");
     await storage.init();
-    await storage.setItem(key,value);
-    res.send("A new key value pair has been added.");
-});
+    const value = await storage.getItem(data.key);
+    result = "";
+    if (value == null) {
+      result = "No value found";
+    } else {
+      result = value;
+    }
+    socket.emit("get_done", result);
+  });
 
-app.listen(9000, () => console.log("Listening on port number 9000"));
+  socket.on("listen", async data => {
+    console.log("listen was called");
+    await storage.init();
+    const value = await storage.getItem(data.key);
+    result = "";
+    if (value == null) {
+      result = "NULL";
+    } else {
+      result = value;
+    }
+    socket.emit("get_listening_value", { key: data.key, value: result });
+    currentValuesBeingListened[socket.id.toString()] = data.key;
+  });
+
+  socket.on("disconnect", () => {
+    console.log(socket.id + " disconnected");
+    delete currentValuesBeingListened[socket.id];
+  });
+});
